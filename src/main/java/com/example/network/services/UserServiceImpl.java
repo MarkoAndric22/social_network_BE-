@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -124,7 +123,14 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public AuthenticationResponseDTO  login(LoginRequestDTO loginRequestDTO) {
+    public AuthenticationResponseDTO  login(LoginRequestDTO loginRequestDTO) throws NotFoundCustomException, AuthorizationCustomException {
+        if(!userRepository.existsByUsername(loginRequestDTO.getUsername())){
+            throw new NotFoundCustomException("User not found");
+        }
+        User user = userRepository.findByUsername(loginRequestDTO.getUsername());
+        if(user.getUsername().equals(loginRequestDTO.getUsername()) || user.getPassword().equals(loginRequestDTO.getPassword())){
+            throw new AuthorizationCustomException("Bad credentials");
+        }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequestDTO.getUsername(),
@@ -132,10 +138,6 @@ public class UserServiceImpl implements UserService{
                 )
         );
 
-        User user = userRepository.findByUsername(loginRequestDTO.getUsername());
-        if (user.getUsername().isEmpty()) {
-            throw new UsernameNotFoundException("User not found");
-        }
         UserResponseDto userResponseDto = userMapper.toResponseDto(user);
         UserDetailsDTO userDetailsDTO = userMapper.toUserDatailsDTO(userResponseDto);
         var jwtToken = jwtService.generateToken(userDetailsDTO.getExtraClaims(), userDetailsDTO);
@@ -148,10 +150,10 @@ public class UserServiceImpl implements UserService{
     }
 
     public UserResponseDto forgotPassword(String email) throws Exception {
-        User foundUser = userRepository.findByEmail(email);
-        if (foundUser.getEmail().isEmpty()) {
-            throw new EntityNotFoundException("User with email " + email + " not found.");
+        if(userRepository.existsByEmail(email)){
+            throw new NotFoundCustomException("User with email " + email + " not found.");
         }
+        User foundUser = userRepository.findByEmail(email);
 
         UserResponseDto userResponseDto = userMapper.toResponseDto(foundUser);
         Map<String, Object> claims = new HashMap<>();

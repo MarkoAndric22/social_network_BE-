@@ -11,11 +11,14 @@ import com.example.network.exceptions.AuthorizationCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 import com.example.network.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Validated
@@ -24,6 +27,10 @@ public class UserController {
 
     @Autowired
     UserService userService;
+
+    private String createErrorMessage(BindingResult result) {
+        return result.getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(" "));
+    }
 
     @RequestMapping(method = RequestMethod.POST,value = "/createUser")
     public UserResponseDto createUser(@RequestBody @Valid UserCreateRequestDto userCreateRequestDto){
@@ -57,7 +64,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.POST, path = "/login")
     @ResponseBody
     public AuthenticationResponseDTO login(@RequestBody LoginRequestDTO loginRequestDTO
-    ) {
+    ) throws NotFoundCustomException, AuthorizationCustomException {
         return userService.login(loginRequestDTO);
     }
 

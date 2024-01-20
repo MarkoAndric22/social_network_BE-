@@ -1,5 +1,6 @@
 package com.example.network.controllers;
 
+import com.example.network.exceptions.AuthorizationCustomException;
 import com.example.network.services.FileHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ public class UploadController {
     @Autowired
     private FileHandler fileHandler;
 
+
     private final Logger logger = (Logger) LoggerFactory.getLogger(this.getClass());
 
     @RequestMapping(method = RequestMethod.POST, value = "/upload")
@@ -33,7 +35,7 @@ public class UploadController {
         String result = null;
         try {
             result = fileHandler.SingleFileUpload(file, redirectAttributes);
-        } catch (IOException e) {
+        } catch (IOException | AuthorizationCustomException e) {
             e.printStackTrace();
         }
         return result;
@@ -52,7 +54,7 @@ public class UploadController {
     @RequestMapping(method = RequestMethod.GET, value = "/download")
     public void download(HttpServletRequest request, HttpServletResponse response, @RequestParam String imageUrl) throws Exception {
         try {
-//            String imageUrl = http://localhost:8080/post/6;
+//
             String destinationPath = "C:/temp/downloaded_image.jpg";
 
             fileHandler.downloadImage(imageUrl, destinationPath);

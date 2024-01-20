@@ -4,6 +4,7 @@ import com.example.network.dtos.post.PostCreateRequestDto;
 import com.example.network.dtos.post.PostResponseDto;
 import com.example.network.dtos.post.PostUpdateRequestDto;
 import com.example.network.entities.Post;
+import com.example.network.entities.enums.Role;
 import com.example.network.exceptions.AuthorizationCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 import com.example.network.mappers.PostMapper;
@@ -56,10 +57,15 @@ public class PostServiceImpl implements PostService{
         }
         roleValidator.validateUserWithUsername(userResolver.getUsername());
 
-        Post post= postMapper.toEntityUpdate(postUpdateRequestDto);
-        post.setTimestamp(LocalDateTime.now());
-        post.setId(id);
-        post.setUser(userRepository.findByUsername(userResolver.getUsername()));
+        Post post= postOptional.get();
+        if (post.getUser().getUsername().equals(userResolver.getUsername())) {
+            post.setText(postUpdateRequestDto.text());
+            post.setTimestamp(LocalDateTime.now());
+            post.setId(id);
+            post.setUser(postOptional.get().getUser());
+        }
+       else throw new NotFoundCustomException("Post is not your");
+
         return postMapper.toResponseDto(postRepository.save(post));
     }
 
@@ -69,8 +75,11 @@ public class PostServiceImpl implements PostService{
         if (postOptional.isEmpty()){
             throw new NotFoundCustomException("Post not found");
         }
-        roleValidator.validateUserWithUsernameAndAdmin(userResolver.getUsername());
-        postRepository.delete(postOptional.get());
+
+        Post post= postOptional.get();
+        if ((post.getUser().getUsername().equals(userResolver.getUsername())) || userResolver.getRole().equals(Role.ROLE_ADMIN) ) {
+            postRepository.delete(postOptional.get());
+        }
 
         return postMapper.toResponseDto(postOptional.get());
     }

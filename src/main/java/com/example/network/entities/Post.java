@@ -26,7 +26,7 @@ public class Post {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(foreignKeyDefinition = "FOREIGN KEY (user_id) REFERENCES user ON DELETE CASCADE ON UPDATE CASCADE"))
     private User user;
 
     @Column(columnDefinition = "TEXT")

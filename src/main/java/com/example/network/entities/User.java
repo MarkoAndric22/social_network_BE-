@@ -46,7 +46,7 @@ public class User {
     private Role role;
 
     @JsonIgnore
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_liked_posts",
             joinColumns = @JoinColumn(name = "user_id"),

@@ -23,6 +23,7 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
 
     private static final String[] AUTH_WHITE_LIST = {
+            "/user/createUser",
             "/user/login/**",
             "/user/forgot-password/**",
             "/user/reset-password/**",

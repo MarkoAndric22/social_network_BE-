@@ -45,4 +45,9 @@ public class RatingController {
     public List<RatingResponseDto> getAll() throws AuthorizationCustomException {
         return ratingService.getAll();
     }
+
+    @RequestMapping(method = RequestMethod.GET,value = "/avgRating/{id}")
+    public double avgRating(@PathVariable Long id) throws AuthorizationCustomException, NotFoundCustomException {
+        return ratingService.getAvgForPost(id);
+    }
 }

@@ -71,15 +71,19 @@ public class CommentServiceImpl implements CommentService{
         if (optionalComment.isEmpty()) {
             throw new NotFoundCustomException("Comment not found");
         }
-
         roleValidator.validateUserWithUsernameAndAdmin(userResolver.getUsername());
 
-        Comment existingComment = optionalComment.get();
-        existingComment.setText(commentUpdateRequestDto.text());
-        existingComment.setTimestamp(LocalDateTime.now());
-        existingComment.setUser(userRepository.findByUsername(userResolver.getUsername()));
+        Comment comment=optionalComment.get();
+        if (comment.getUser().getUsername().equals(userResolver.getUsername())) {
 
-        return commentMapper.toResponseDto(commentRepository.save(existingComment));
+            comment = optionalComment.get();
+            comment.setText(commentUpdateRequestDto.text());
+            comment.setTimestamp(LocalDateTime.now());
+            comment.setUser(optionalComment.get().getUser());
+        }
+        else throw new NotFoundCustomException(("Comment is not your"));
+
+        return commentMapper.toResponseDto(commentRepository.save(comment));
     }
 
 
@@ -91,8 +95,11 @@ public class CommentServiceImpl implements CommentService{
         }
 
         roleValidator.validateUserWithUsernameAndAdmin(userResolver.getUsername());
-
-        commentRepository.delete(optionalComment.get());
+        Comment comment=optionalComment.get();
+        if(comment.getUser().getUsername().equals(userResolver.getUsername())) {
+            commentRepository.delete(optionalComment.get());
+        }
+        else throw new NotFoundCustomException(("Comment is not your"));
 
         return commentMapper.toResponseDto(optionalComment.get());
     }

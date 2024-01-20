@@ -1,5 +1,9 @@
 package com.example.network.services;
 
+import com.example.network.exceptions.AuthorizationCustomException;
+import com.example.network.services.authorization.UserResolver;
+import com.example.network.services.authorization.UserRoleValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -12,14 +16,22 @@ import java.nio.file.Paths;
 @Service
 public class FileHandlerImpl implements FileHandler {
 
+    @Autowired
+    UserResolver userResolver;
+
+    @Autowired
+    UserRoleValidator roleValidator;
+
     private static String UPLOADED_FOLDER = "C:\\temp\\";
 
     @Override
-    public String SingleFileUpload(MultipartFile file, RedirectAttributes redirectAttributes) throws IOException {
+    public String SingleFileUpload(MultipartFile file, RedirectAttributes redirectAttributes) throws IOException, AuthorizationCustomException {
         if (file.isEmpty()) {
             redirectAttributes.addFlashAttribute("message", "Please select a file to upload");
             return "redirect:uploadStatus";
         }
+        roleValidator.validateUserWithUsername(userResolver.getUsername());
+
         try {
 
             byte[] bytes = file.getBytes();
@@ -35,8 +47,10 @@ public class FileHandlerImpl implements FileHandler {
     }
 
     @Override
-    public void downloadImage(String imageUrl, String destinationPath) throws IOException {
+    public void downloadImage(String imageUrl, String destinationPath) throws IOException, AuthorizationCustomException {
         URL url = new URL(imageUrl);
+        roleValidator.validateUserWithUsername(userResolver.getUsername());
+
         try (InputStream in = new BufferedInputStream(url.openStream());
              ByteArrayOutputStream out = new ByteArrayOutputStream();
              FileOutputStream fos = new FileOutputStream(destinationPath)) {

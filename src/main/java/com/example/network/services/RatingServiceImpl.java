@@ -5,6 +5,7 @@ import com.example.network.dtos.rating.RatingResponseDto;
 import com.example.network.dtos.rating.RatingUpdateRequestDto;
 import com.example.network.entities.Post;
 import com.example.network.entities.Rating;
+import com.example.network.entities.User;
 import com.example.network.exceptions.AuthorizationCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 import com.example.network.mappers.RatingMapper;
@@ -72,7 +73,10 @@ public class RatingServiceImpl implements RatingService{
         roleValidator.validateUserWithUsername(userResolver.getUsername());
 
         Rating existingRating= optionalRating.get();
-        existingRating.setRating(ratingUpdateRequestDto.rating());
+        if (existingRating.getUser().getUsername().equals((userResolver.getUsername()))) {
+            existingRating.setRating(ratingUpdateRequestDto.rating());
+        }
+        else throw new NotFoundCustomException("Rating is not your");
 
         return ratingMapper.toResponseDto(ratingRepository.save(existingRating));
     }
@@ -86,7 +90,11 @@ public class RatingServiceImpl implements RatingService{
 
         roleValidator.validateUserWithUsername(userResolver.getUsername());
 
-        ratingRepository.delete(optionalRating.get());
+        Rating existingRating= optionalRating.get();
+        if (existingRating.getUser().getUsername().equals((userResolver.getUsername()))) {
+            ratingRepository.delete(optionalRating.get());
+        }
+        else throw new NotFoundCustomException("Rating is not your");
 
         return ratingMapper.toResponseDto(optionalRating.get());
     }
@@ -107,5 +115,24 @@ public class RatingServiceImpl implements RatingService{
         roleValidator.validateAdmin();
 
         return ratingMapper.toResponseListDto(ratingRepository.findAll());
+    }
+
+    @Override
+    public double getAvgForPost(Long id) throws AuthorizationCustomException {
+        roleValidator.validateUserWithUsername(userResolver.getUsername());
+
+        User user =userRepository.findByUsername(userResolver.getUsername());
+
+        Post post=postRepository.findById(id).get();
+
+        int sum = 0;
+
+        for (Rating rating:post.getRatings()){
+            sum+=rating.getRating();
+        }
+
+        double avg= 1.0*sum/post.getRatings().size();
+
+        return avg;
     }
 }

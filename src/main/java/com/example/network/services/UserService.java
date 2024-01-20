@@ -26,7 +26,7 @@ public interface UserService {
 
     List<User> search(String name);
 
-    AuthenticationResponseDTO login(LoginRequestDTO loginRequestDTO);
+    AuthenticationResponseDTO login(LoginRequestDTO loginRequestDTO) throws NotFoundCustomException, AuthorizationCustomException;
 
     UserResponseDto forgotPassword(String email) throws Exception;
 
