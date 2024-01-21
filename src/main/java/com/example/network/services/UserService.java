@@ -7,6 +7,7 @@ import com.example.network.dtos.user.UserResponseDto;
 import com.example.network.dtos.user.UserUpdateRequestDto;
 import com.example.network.entities.User;
 import com.example.network.exceptions.AuthorizationCustomException;
+import com.example.network.exceptions.ForbiddenCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 
 import javax.mail.MessagingException;
@@ -14,7 +15,7 @@ import java.util.List;
 
 public interface UserService {
 
-    UserResponseDto createUser(UserCreateRequestDto userCreateRequestDto);
+    UserResponseDto createUser(UserCreateRequestDto userCreateRequestDto) throws ForbiddenCustomException;
 
     UserResponseDto updateUser(UserUpdateRequestDto userUpdateRequestDto) throws AuthorizationCustomException;
 

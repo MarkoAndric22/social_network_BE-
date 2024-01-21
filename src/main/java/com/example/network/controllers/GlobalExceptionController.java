@@ -2,6 +2,7 @@ package com.example.network.controllers;
 
 import com.example.network.exceptions.AuthorizationCustomException;
 import com.example.network.exceptions.BadRequestCustomException;
+import com.example.network.exceptions.ForbiddenCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,11 @@ public class GlobalExceptionController {
     @ExceptionHandler(NotFoundCustomException.class)
     public ResponseEntity<Map<String, List<String>>> notFoundCustomException(NotFoundCustomException ex) {
         return new ResponseEntity<>(getErrorsMap(ex.getMessage()), new HttpHeaders(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ForbiddenCustomException.class)
+    public ResponseEntity<Map<String, List<String>>> forbiddenCustomException(ForbiddenCustomException ex) {
+        return new ResponseEntity<>(getErrorsMap(ex.getMessage()), new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
     private Map<String, List<String>> getErrorsMap(String error) {

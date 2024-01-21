@@ -10,6 +10,7 @@ import com.example.network.entities.EmailObject;
 import com.example.network.entities.User;
 import com.example.network.entities.enums.Role;
 import com.example.network.exceptions.AuthorizationCustomException;
+import com.example.network.exceptions.ForbiddenCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 import com.example.network.mappers.UserMapper;
 import com.example.network.repositories.UserRepository;
@@ -57,14 +58,18 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
-    public UserResponseDto createUser(UserCreateRequestDto userCreateRequestDto) {
+    public UserResponseDto createUser(UserCreateRequestDto userCreateRequestDto) throws ForbiddenCustomException {
         User user= new User();
         user.setName(userCreateRequestDto.name());
         user.setUsername(userCreateRequestDto.username());
         user.setPassword(Encryption.getPassEncoded(userCreateRequestDto.password()));
         user.setEmail(userCreateRequestDto.email());
         user.setRole(Role.ROLE_USER);
-
+        for (User userDB: userRepository.findAll()){
+            if(user.getUsername().equals(userDB.getUsername()) || user.getEmail().equals(userDB.getEmail())){
+                throw new ForbiddenCustomException("User is already exists!");
+            }
+        }
         return userMapper.toResponseDto(userRepository.save(user));
     }
 
@@ -128,7 +133,7 @@ public class UserServiceImpl implements UserService{
             throw new NotFoundCustomException("User not found");
         }
         User user = userRepository.findByUsername(loginRequestDTO.getUsername());
-        if(user.getUsername().equals(loginRequestDTO.getUsername()) || user.getPassword().equals(loginRequestDTO.getPassword())){
+        if(user.getUsername().equals(loginRequestDTO.getUsername()) && user.getPassword().equals(loginRequestDTO.getPassword())){
             throw new AuthorizationCustomException("Bad credentials");
         }
         authenticationManager.authenticate(

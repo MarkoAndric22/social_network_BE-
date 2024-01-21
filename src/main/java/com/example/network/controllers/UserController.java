@@ -8,6 +8,7 @@ import com.example.network.dtos.user.UserResponseDto;
 import com.example.network.dtos.user.UserUpdateRequestDto;
 import com.example.network.entities.User;
 import com.example.network.exceptions.AuthorizationCustomException;
+import com.example.network.exceptions.ForbiddenCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
 import com.example.network.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.POST,value = "/createUser")
-    public UserResponseDto createUser(@RequestBody @Valid UserCreateRequestDto userCreateRequestDto){
+    public UserResponseDto createUser(@RequestBody @Valid UserCreateRequestDto userCreateRequestDto) throws ForbiddenCustomException {
         return userService.createUser(userCreateRequestDto);
     }
 

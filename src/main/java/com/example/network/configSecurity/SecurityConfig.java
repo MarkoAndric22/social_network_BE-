@@ -26,8 +26,7 @@ public class SecurityConfig {
             "/user/createUser",
             "/user/login/**",
             "/user/forgot-password/**",
-            "/user/reset-password/**",
-            "/chat/**"
+            "/user/reset-password/**"
     };
 
     @Bean

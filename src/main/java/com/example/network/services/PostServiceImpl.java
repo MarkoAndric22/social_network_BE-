@@ -4,6 +4,7 @@ import com.example.network.dtos.post.PostCreateRequestDto;
 import com.example.network.dtos.post.PostResponseDto;
 import com.example.network.dtos.post.PostUpdateRequestDto;
 import com.example.network.entities.Post;
+import com.example.network.entities.User;
 import com.example.network.entities.enums.Role;
 import com.example.network.exceptions.AuthorizationCustomException;
 import com.example.network.exceptions.NotFoundCustomException;
@@ -77,8 +78,15 @@ public class PostServiceImpl implements PostService{
         }
 
         Post post= postOptional.get();
-        if ((post.getUser().getUsername().equals(userResolver.getUsername())) || userResolver.getRole().equals(Role.ROLE_ADMIN) ) {
-            postRepository.delete(postOptional.get());
+        if ((post.getUser().getUsername().equals(userResolver.getUsername())) || userResolver.getRole().equals(Role.ROLE_ADMIN)) {
+            for (User likedUser : post.getLikedByUsers()) {
+                likedUser.getLikedPosts().remove(post);
+            }
+
+            post.getLikedByUsers().clear();
+
+            postRepository.saveAndFlush(post);
+            postRepository.delete(post);
         }
 
         return postMapper.toResponseDto(postOptional.get());
